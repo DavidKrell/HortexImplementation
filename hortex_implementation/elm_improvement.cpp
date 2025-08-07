@@ -1,9 +1,11 @@
 #include <bitset>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <vector>
 #include <bits/ostream.tcc>
+#include <iomanip>
 
 // Chaotic logistic map
 double LM(const double eta, const double gamma) {
@@ -87,7 +89,6 @@ uint32_t ELM(const uint32_t x, const bool improvedELMUsed, const int constants_s
 
 
         if (i == n) {
-
             if (multiplier_is_outside) {
                 const auto gamma32 = static_cast<float>(gamma);
                 const float product = gamma32 * static_cast<float>(pow(10, 10));
@@ -183,7 +184,7 @@ std::bitset<256> fFunction(const std::bitset<256> &x, const bool improvedELMUsed
 
 template<std::size_t N>
 std::bitset<128> hortex(const std::bitset<N> &x, const bool improvedELMUsed, const int constants_setting, const bool multiplier_is_outside,
-    const bool pseudocode_arx_used) {
+                        const bool pseudocode_arx_used) {
     constexpr int rate = 64;
     constexpr int capacity = 192;
     const std::bitset<256> fFunctionTestVector("0010100010111110110000110010011111110011010111110011111110110010000010110111100110100111001010111111100111111110001111111001100010010110111000100111100011010110111001000100110111010111101110101110001110100011101011011001111001101111101010001001001110011111");
@@ -238,24 +239,25 @@ std::bitset<128> hortex(const std::bitset<N> &x, const bool improvedELMUsed, con
         } else {
             std::bitset<256> fInput(blocks[i].to_ullong());
             fInput = fInput << 256 - 64;
-            s = fFunction(s ^ fInput, improvedELMUsed, constants_setting, multiplier_is_outside, pseudocode_arx_used);
+            fInput = s ^ fInput;
+            s = fFunction(fInput, improvedELMUsed, constants_setting, multiplier_is_outside, pseudocode_arx_used);
         }
     }
 
-    std::bitset<64> h1 = 0, h2 = 0;
+    std::bitset<rate> h1 = 0, h2 = 0;
 
     // Squeezing Phase
     for (int j = 1; j <= 2; j++) {
         s = fFunction(s, improvedELMUsed, constants_setting, multiplier_is_outside, pseudocode_arx_used);
 
         if (j == 1) {
-            h1 = (s >> 256 - 64).to_ullong();
+            h1 = (s >> capacity).to_ullong();
         } else if (j == 2) {
-            h2 = (s >> 256 - 64).to_ullong();
+            h2 = (s >> capacity).to_ullong();
         }
     }
 
-    return std::bitset<128>(h1.to_string() + h2.to_string());
+    return std::bitset<2 * rate>(h1.to_string() + h2.to_string());
 }
 
 void collisionTest(const bool improvedELMUsed, const int constants_setting, const bool multiplier_is_outside) {
@@ -279,59 +281,61 @@ void collisionTest(const bool improvedELMUsed, const int constants_setting, cons
 
 
 int main() {
-    collisionTest(true, 0, true);
-    collisionTest(true, 0, false);
-    collisionTest(true, 1, true);
-    collisionTest(true, 1, false);
-    collisionTest(true, 2, true);
-    collisionTest(true, 2, false);
-
-    collisionTest(false, 0, true);
-    collisionTest(false, 0, false);
-    collisionTest(false, 1, true);
-    collisionTest(false, 1, false);
-    collisionTest(false, 2, true);
-    collisionTest(false, 2, false);
+    // collisionTest(true, 0, true);
+    // collisionTest(true, 0, false);
+    // collisionTest(true, 1, true);
+    // collisionTest(true, 1, false);
+    // collisionTest(true, 2, true);
+    // collisionTest(true, 2, false);
+    //
+    // collisionTest(false, 0, true);
+    // collisionTest(false, 0, false);
+    // collisionTest(false, 1, true);
+    // collisionTest(false, 1, false);
+    // collisionTest(false, 2, true);
+    // collisionTest(false, 2, false);
 
     // Für alles Kollisionen gefunden!!!
 
-    const std::bitset<128> input("10101011110011010001001000110100101111001101010001010001011110101010101111000010111011111101001010000000000000000000000000000000");
+    //const std::bitset<128> input("10101011110011010001001000110100101111001101010001010001011110101010101111000010111011111101001010000000000000000000000000000000");
 
-    hortex(input, false, 0, true, true);
-    hortex(input, false, 0, false, true);
+    const std::bitset<96> input("101010111100110100010010001101001011110011010100010100010111101010101011110000101110111111010010");
 
-    hortex(input, false, 1, true, true);
-    hortex(input, false, 1, false, true);
-
-    hortex(input, false, 2, true, true);
-    hortex(input, false, 2, false, true);
-
-    hortex(input, false, 0, true, false);
-    hortex(input, false, 0, false, false);
-
-    hortex(input, false, 1, true, false);
-    hortex(input, false, 1, false, false);
-
-    hortex(input, false, 2, true, false);
-    hortex(input, false, 2, false, false);
-
-    hortex(input, true, 0, true, true);
-    hortex(input, true, 0, false, true);
-
-    hortex(input, true, 1, true, true);
-    hortex(input, true, 1, false, true);
-
-    hortex(input, true, 2, true, true);
+    //hortex(input, false, 0, true, true);
+    // hortex(input, false, 0, false, true);
+    //
+    // hortex(input, false, 1, true, true);
+    // hortex(input, false, 1, false, true);
+    //
+    // hortex(input, false, 2, true, true);
+    // hortex(input, false, 2, false, true);
+    //
+    // hortex(input, false, 0, true, false);
+    // hortex(input, false, 0, false, false);
+    //
+    // hortex(input, false, 1, true, false);
+    // hortex(input, false, 1, false, false);
+    //
+    // hortex(input, false, 2, true, false);
+    // hortex(input, false, 2, false, false);
+    //
+    // hortex(input, true, 0, true, true);
+    // hortex(input, true, 0, false, true);
+    //
+    // hortex(input, true, 1, true, true);
+    // hortex(input, true, 1, false, true);
+    //
+    // hortex(input, true, 2, true, true);
     hortex(input, true, 2, false, true);
-
-    hortex(input, true, 0, true, false);
-    hortex(input, true, 0, false, false);
-
-    hortex(input, true, 1, true, false);
-    hortex(input, true, 1, false, false);
-
-    hortex(input, true, 2, true, false);
-    hortex(input, true, 2, false, false);
+    //
+    // hortex(input, true, 0, true, false);
+    // hortex(input, true, 0, false, false);
+    //
+    // hortex(input, true, 1, true, false);
+    // hortex(input, true, 1, false, false);
+    //
+    // hortex(input, true, 2, true, false);
+    // hortex(input, true, 2, false, false);
 
 
     // Testvektor passt für keine Konfiguration!!!
