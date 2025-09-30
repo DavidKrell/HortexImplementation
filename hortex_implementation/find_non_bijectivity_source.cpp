@@ -1,6 +1,3 @@
-// find_elm_collisions.cpp
-// Compile: g++ -std=c++20 -O2 -march=native -o find_elm_collisions find_elm_collisions.cpp
-
 #include <bit>
 #include <cmath>
 #include <cstdint>
@@ -13,7 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-// --- (re)implementation of the user's ELM logic but instrumented to expose internals ---
 double fLM(const double eta, const double gamma) {
     return eta * gamma * (1.0 - gamma);
 }
@@ -112,7 +108,6 @@ Info ELM_instrumented(const uint32_t x, const bool use_improved_elm, const int c
     return info;
 }
 
-// pretty-print helpers
 std::string hex32(uint32_t v) {
     std::ostringstream ss;
     ss << "0x" << std::hex << std::uppercase << v << std::dec;
@@ -123,7 +118,7 @@ int main() {
     std::mt19937_64 rng(123456789ULL);
     std::uniform_int_distribution<uint32_t> dist32(0, std::numeric_limits<uint32_t>::max());
 
-    const int MAX_TRIES_PER_CONFIG = 500000; // should be enough for collisions (birthday effect)
+    const int MAX_TRIES_PER_CONFIG = 500000;
 
     for (int use_improved = 0; use_improved <= 1; ++use_improved) {
         for (int constants_setting = 0; constants_setting < 4; ++constants_setting) {
@@ -142,13 +137,12 @@ int main() {
                     } else {
                         const Info &prev = it->second;
                         if (prev.x != info.x) {
-                            // collision found
                             std::cout << "=== COLLISION FOUND ===\n";
                             std::cout << "Config: use_improved_elm=" << use_improved
                                       << " constants_setting=" << constants_setting
                                       << " multiplier_is_outside=" << mult_out << "\n\n";
 
-                            std::cout << "Result (final uint32_t): " << hex32(info.result) << " (" << info.result << ")\n\n";
+                            std::cout << "Result: " << hex32(info.result) << " (" << info.result << ")\n\n";
 
                             auto print_info = [&](const Info &I, const char *label) {
                                 std::cout << label << " x=" << hex32(I.x) << " (dec " << I.x << ")\n";
@@ -164,10 +158,10 @@ int main() {
                             std::cout << "\n";
                             print_info(info, "Current:");
 
-                            // classify cause
+  
                             if (prev.w1 == info.w1 && prev.w2 == info.w2) {
-                                std::cout << "\nDiagnosis: PRE-COMBINE COLLISION -> w1 and w2 are IDENTICAL.\n";
-                                std::cout << "This means different inputs produced the same float32 representations (quantization / rounding to single precision lost information).\n";
+                                std::cout << "\n PRE-COMBINE COLLISION -> w1 and w2 are IDENTICAL.\n";
+                                std::cout << "This means different inputs produced the same float32 representations.\n";
                             } else {
                                 std::cout << "\nDiagnosis: POST-COMBINE COLLISION -> w1/w2 differ, but rotl(w1,17) ^ w2 coincides.\n";
                                 std::cout << "This means the final XOR/rotation combine compresses (w1,w2) -> single 32-bit value causing many-to-one mapping.\n";
@@ -178,7 +172,7 @@ int main() {
                             break;
                         }
                     }
-                } // iter loop
+                } 
 
                 if (!found) {
                     std::cout << "No collision found in " << MAX_TRIES_PER_CONFIG
